@@ -9,9 +9,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.egiog1s.mongodb.net/?retryWrites=true&w=majority`;
-
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -25,8 +23,20 @@ async function run() {
   try {
     await client.connect();
 
+    const database = client.db("productDB");
+    const productCollection = database.collection("product");
 
-    
+    app.get("/products", async (req, res) => {
+      const query = productCollection.find();
+      const result = await query.toArray();
+      res.send(result);
+    });
+
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
