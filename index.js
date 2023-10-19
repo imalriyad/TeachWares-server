@@ -27,23 +27,51 @@ async function run() {
     const productCollection = database.collection("product");
     const brandsCollection = database.collection("brands");
 
+    app.get("/products/brands/:brands", async (req, res) => {
+      const brands = req.params.brands;
+      const query = { brandName: brands };
+      const result = await productCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      res.send(result);
+    });
 
     app.get("/brands", async (req, res) => {
       const query = brandsCollection.find();
       const result = await query.toArray();
       res.send(result);
     });
-
-    app.get("/products/:brands", async (req, res) => {
-      const brands = req.params.brands;
-      const query = { brandName: brands };
-      const result = await productCollection.find(query).toArray();
-      res.send(result);
-    });
-
     app.get("/products", async (req, res) => {
       const query = productCollection.find();
       const result = await query.toArray();
+      res.send(result);
+    });
+
+    app.patch("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const product = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProduct = {
+        $set: {
+          productName: product.productName,
+          brandName: product.brandName,
+          productType: product.productType,
+          productPrice: product.productPrice,
+          productRating: product.productRating,
+          productDescription: product.productDescription,
+          productphotoUrl: product.productphotoUrl,
+        },
+      };
+      const result = await productCollection.updateOne(
+        query,
+        updateProduct,
+        options
+      );
       res.send(result);
     });
 
