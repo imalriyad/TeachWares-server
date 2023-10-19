@@ -25,6 +25,7 @@ async function run() {
 
     const database = client.db("productDB");
     const productCollection = database.collection("product");
+    const cartCollection = database.collection("cart");
     const brandsCollection = database.collection("brands");
 
     app.get("/products/brands/:brands", async (req, res) => {
@@ -53,7 +54,6 @@ async function run() {
     });
 
     // update related api
-
     app.get("/products/update/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -83,6 +83,46 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    // Add to cart api
+    app.get("/cart", async (req, res) => {
+      const query = cartCollection.find();
+      const result = await query.toArray();
+      res.send(result);
+    });
+
+    app.get("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await cartCollection.findOne(query);
+      res.send(result);
+    });
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: id };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cartProduct = req.body;
+      try {
+        const result = await cartCollection.insertOne(cartProduct);
+        res.send(result);
+      } catch (error) {
+        if (error.code === 11000) {
+          res
+            .status(400)
+            .send(
+              "Duplicate key error: Object with the same _id already exists."
+            );
+        } else {
+          console.error("Error:", error);
+          res.status(500).send("Internal Server Error");
+        }
+      }
     });
 
     app.post("/products", async (req, res) => {
