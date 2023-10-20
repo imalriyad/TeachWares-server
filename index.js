@@ -1,8 +1,8 @@
 const express = require("express");
-const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-require("dotenv").config();
 const app = express();
+const cors = require("cors");
+require("dotenv").config();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 // MiddleWare
@@ -21,8 +21,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
-
     const database = client.db("productDB");
     const productCollection = database.collection("product");
     const cartCollection = database.collection("cart");
@@ -130,11 +128,6 @@ async function run() {
       const result = await productCollection.insertOne(product);
       res.send(result);
     });
-
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
     // await client.close();
   }
